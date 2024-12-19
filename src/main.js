@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router' // Import the router for managing routes
+import '@mdi/font/css/materialdesignicons.css'
 
 // Import axios configuration
 import axiosInstance from './axios' // This is where you'll set up Axios

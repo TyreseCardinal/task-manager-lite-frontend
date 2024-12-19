@@ -6,13 +6,19 @@ import GetTasks from '../components/GetTasks.vue'
 import CreateTask from '../components/CreateTask.vue'
 import UpdateTask from '../components/UpdateTask.vue'
 import GetTask from '../components/GetTask.vue'
+import Home from '@/views/Home.vue'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   routes: [
     {
       path: '/',
+      name: 'home',
+      component: Home, // Home view is now the default route
+    },
+    {
+      path: '/get-tasks',
       name: 'get-tasks',
       component: GetTasks, // Display the task list by default
     },
@@ -33,3 +39,18 @@ export default new Router({
     },
   ],
 })
+
+// Suppress NavigationDuplicated errors
+const originalPush = router.push
+router.push = function push(location, onResolve, onReject) {
+  if (onResolve || onReject) {
+    return originalPush.call(this, location, onResolve, onReject)
+  }
+  return originalPush.call(this, location).catch((err) => {
+    if (err.name !== 'NavigationDuplicated') {
+      throw err
+    }
+  })
+}
+
+export default router
