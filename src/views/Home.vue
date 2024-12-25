@@ -2,10 +2,12 @@
   <main>
     <div>
       <nav class="mdi mdi-home">Home</nav>
-      <nav></nav>
+      <nav class="mdi mdi-pencil">Edit</nav>
+      <nav class="mdi mdi-format-list-checks">List</nav>
+      <nav class="mdi mdi-home"></nav>
     </div>
 
-    <h1>Task Manager Lite</h1>
+    <h1 class="page-title">Task Manager Lite</h1>
 
     <!-- Navigation Section -->
     <div class="nav-buttons">
@@ -15,7 +17,18 @@
 
     <!-- Task List Section -->
     <div v-if="currentSection === 'taskList'">
-      <GetTasks />
+      <GetTasks :currentPage="currentPage" :limit="limit" :totalPages="totalPages"
+        @update-total-pages="handleUpdateTotalPages" />
+      <!-- Pagination Controls -->
+      <div class="pagination">
+        <button :disabled="currentPage === 1" @click="updatePage(currentPage - 1)">
+          Previous
+        </button>
+        <span>Page {{ currentPage }}</span>
+        <button :disabled="currentPage === totalPages" @click="updatePage(currentPage + 1)">
+          Next
+        </button>
+      </div>
     </div>
 
     <!-- Create Task Section -->
@@ -23,7 +36,7 @@
       <CreateTask />
     </div>
 
-    <!-- Edit Task Section (view/edit specific task) -->
+    <!-- Edit Task Section -->
     <div v-if="currentSection === 'editTask'">
       <UpdateTask />
     </div>
@@ -53,6 +66,9 @@ export default {
     return {
       currentSection: 'taskList', // Default section is Task List
       currentTaskId: null, // Store the selected task ID for viewing/editing
+      currentPage: 1, // Current pagination page
+      totalPages: 1, // Total number of pages (update from API)
+      limit: 10, // Number of items per page
     }
   },
   methods: {
@@ -62,6 +78,14 @@ export default {
         // Additional logic for setting taskId if viewing/editing a specific task
         this.currentTaskId = 1 // Replace with the actual task ID to view or edit
       }
+    },
+    updatePage(newPage) {
+      if (newPage > 0 && newPage <= this.totalPages) {
+        this.currentPage = newPage
+      }
+    },
+    handleUpdateTotalPages(totalPages) {
+      this.totalPages = totalPages
     },
   },
 }
@@ -75,5 +99,17 @@ export default {
 button {
   padding: 10px;
   margin-right: 10px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
