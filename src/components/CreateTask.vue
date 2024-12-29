@@ -34,11 +34,6 @@ export default {
           completed: this.completed,
         })
         console.log('Task created:', response.data)
-
-        // Navigate only if the current route is not already 'get-tasks'
-        if (this.$route.name !== 'get-tasks') {
-          this.$router.push({ name: 'get-tasks' })
-        }
       } catch (error) {
         console.error('Error creating task:', error)
       }

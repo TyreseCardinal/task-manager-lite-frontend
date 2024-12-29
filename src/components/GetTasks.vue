@@ -1,75 +1,84 @@
 <template>
-  <div>
-    <h1>Task List</h1>
-    <ul>
-      <li v-for="task in tasks" :key="task.id">
-        {{ task.title }} - {{ task.completed ? 'Completed' : 'Not Completed' }}
-        <button @click="deleteTask(task.id)">Delete</button>
-        <button @click="editTask(task.id)">Edit</button>
-      </li>
-    </ul>
-  </div>
+  <main>
+    <div class="get-tasks">
+      <h2>Task List</h2>
+      <div class="filters">
+        <label for="status">Filter by Status:</label>
+        <select v-model="filterStatus" @change="fetchTasks">
+          <option value="all">All</option>
+          <option value="completed">Completed</option>
+          <option value="pending">Pending</option>
+        </select>
+      </div>
+      <div class="task-list">
+        <div v-for="task in tasks" :key="task.id" class="task">
+          <h3>{{ task.title }}</h3>
+          <p>Status: {{ task.completed ? 'Completed' : 'Pending' }}</p>
+          <router-link :to="'/tasks/' + task.id">
+            <button>View</button>
+          </router-link>
+        </div>
+      </div>
+      <div class="pagination">
+        <button @click="prevPage" :disabled="page === 1">Previous</button>
+        <button @click="nextPage" :disabled="page === totalPages">Next</button>
+      </div>
+    </div>
+  </main>
 </template>
 
 <script>
-import axiosInstance from '../axios'
-
 export default {
-  props: {
-    currentPage: {
-      type: Number,
-      required: true,
-    },
-    limit: {
-      type: Number,
-      required: true,
-    },
-    totalPages: {
-      type: Number,
-      required: true,
-    },
-  },
   data() {
     return {
-      tasks: [], // Stores the list of tasks for the current page
-    };
-  },
-  watch: {
-    currentPage: {
-      immediate: true, // Trigger fetch when the component is mounted
-      handler() {
-        this.fetchTasks();
-      },
-    },
+      tasks: [],
+      page: 1,
+      totalPages: 1,
+      filterStatus: 'all',
+    }
   },
   methods: {
     async fetchTasks() {
-      try {
-        const response = await axiosInstance.get('/tasks', {
-          params: {
-            page: this.currentPage,
-            limit: this.limit,
-          },
-        });
-        this.tasks = response.data.tasks; // Update tasks with fetched data
-        // Emit the new total pages to the parent component
-        this.$emit('update-total-pages', response.data.totalPages);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
+      const response = await this.$axios.get('/tasks', {
+        params: { page: this.page, limit: 10 },
+      })
+      this.tasks = response.data.tasks
+      this.totalPages = response.data.totalPages
+    },
+    nextPage() {
+      if (this.page < this.totalPages) {
+        this.page++
+        this.fetchTasks()
       }
     },
-    async deleteTask(taskId) {
-      try {
-        await axiosInstance.delete(`/tasks/${taskId}`);
-        this.fetchTasks(); // Re-fetch tasks after deletion to update the list
-      } catch (error) {
-        console.error('Error deleting task:', error);
+    prevPage() {
+      if (this.page > 1) {
+        this.page--
+        this.fetchTasks()
       }
-    },
-    editTask(taskId) {
-      // Navigation logic to edit task
-      this.$emit('edit-task', taskId);
     },
   },
-};
+  mounted() {
+    this.fetchTasks()
+  },
+}
 </script>
+
+<style scoped>
+.task-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.task {
+  background: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination {
+  margin-top: 20px;
+}
+</style>
